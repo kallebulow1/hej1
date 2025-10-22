@@ -1,0 +1,44 @@
+hej <- httr2::request("https://opensky-network.org/api/states/all")
+
+
+
+library(httr2)
+library(jsonlite)
+library(dplyr)
+
+# Lav et request-objekt
+req <- request("https://opensky-network.org/api/states/all")
+
+# Udfør kaldet
+resp <- req_perform(req)
+
+# Konverter JSON til en liste
+data <- resp_body_json(resp)
+
+str(data)
+
+# Konverter 'states' til en data frame
+df <- as.data.frame(do.call(rbind, data$states), stringsAsFactors = FALSE)
+
+colnames(df) <- c(
+  "icao24", "callsign", "origin_country", "time_position", "last_contact",
+  "longitude", "latitude", "baro_altitude", "on_ground", "velocity",
+  "true_track", "vertical_rate", "sensors", "geo_altitude", "squawk",
+  "spi", "position_source"
+)
+
+library(tibble)
+
+flights_now <- as_tibble(df)
+
+# Rens lidt op
+flights_now <- flights_now %>%
+  mutate(across(c(longitude, latitude, baro_altitude, velocity), as.numeric)) %>%
+  mutate(on_ground = as.logical(on_ground))
+
+# Se de første rækker
+glimpse(flights_now)
+
+flights_now %>%
+  filter(on_ground == FALSE) %>%
+  summarise(fly_i_luften = n())
