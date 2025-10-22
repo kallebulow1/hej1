@@ -1,0 +1,9 @@
+
+flights_guess <- cleaned %>%
+  mutate(
+    airline_guess = if_else(
+      str_detect(callsign, "^(RYR|FR)"),  # regex: starter med RYR eller FR
+      "Ryanair",                          # hvis mønsteret matcher
+      "Øvrige"                            # ellers
+    )
+  )
