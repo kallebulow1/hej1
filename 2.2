@@ -1,0 +1,23 @@
+# Hvis du ikke har flights_now endnu, kør 2.1-koden først
+
+# 1) Rens lande-navne en smule
+cleaned <- flights_now %>%
+  mutate(
+    origin_country = na_if(str_squish(as.character(origin_country)), "")
+  )
+
+# 2) Filtrér til fly i luften og tæl pr. land
+country_counts <- cleaned %>%
+  filter(on_ground == FALSE) %>%                  # kun i luften nu
+  group_by(origin_country) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  arrange(desc(n))
+
+country_counts %>% print(n = 20)                  # se top ~20
+
+top10_countries <- country_counts %>% slice_max(n, n = 10)
+top10_countries
+
+cleaned %>%
+  filter(on_ground == FALSE) %>%
+  summarise(total_fly_i_luften = n())
