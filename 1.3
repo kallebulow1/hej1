@@ -1,0 +1,31 @@
+# Vælg år (kan også være year(Sys.Date()))
+year <- 2025
+
+# 1) én dato pr. måned (gulvning til månedens første dag)
+months_seq <- seq(ymd(paste0(year, "-01-01")),
+                  ymd(paste0(year, "-12-31")),
+                  by = "1 month") %>%
+  floor_date(unit = "month")
+
+# 2) Samme øjeblik målt i UTC og i lokal tid (Europe/Copenhagen)
+utc_time   <- as_datetime(months_seq, tz = "UTC")
+local_time <- with_tz(utc_time, "Europe/Copenhagen")
+
+# 3) Offset i timer (lokal tid minus UTC)
+tz_df <- tibble(
+  date         = months_seq,
+  month_label  = month(months_seq, label = TRUE, abbr = FALSE),
+  offset_hours = as.numeric(difftime(local_time, utc_time, units = "hours"))
+)
+
+# 4) Plot
+ggplot(tz_df, aes(x = month_label, y = offset_hours, group = 1)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = paste("Tidsforskel mellem Europe/Copenhagen og UTC (", year, ")", sep = ""),
+    x = "Måned",
+    y = "Tidsforskel (timer)",
+    caption = "Kilde: egen beregning (lubridate)"
+  ) +
+  theme_minimal()
